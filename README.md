@@ -70,9 +70,6 @@ Operator Commands:
 - `/quit` - Exit the operator interface
 - Any other input will be sent as a message to the connected user
 
-## Project Structure
-
-
 3. Start the user client:
 
 ```bash
