@@ -4,6 +4,7 @@ dotenv.config();
 import WebSocket from 'ws';
 import readline from 'readline';
 import { MessageType } from './enums';
+import { isCommand, getCommand } from './commands';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -50,6 +51,14 @@ ws.on('message', (data) => {
       console.log(`Connected to user ${message.targetId}`);
       break;
 
+    case MessageType.USERS_LIST:
+      const { users } = message
+      console.log("Available users:");
+      for (const user of users) {
+        console.log("  ", user.id, " - ", user.isOperator ? "operator" : "normal user");
+      }
+      break;
+
     default:
       console.log('Server:', message);
   }
@@ -57,15 +66,19 @@ ws.on('message', (data) => {
 });
 
 function askMessage(input: string) {
-  if (input.startsWith('/')) {
-    const [command, ...args] = input.slice(1).split(' ');
+  if (isCommand(input)) {
+    const command = getCommand(input);
+    const args = input.slice(command.length + 1).trim().split(' ');
 
     switch (command) {
       case MessageType.CONNECT:
-        ws.send(JSON.stringify({ type: 'connect', targetId: args[0] }));
+        ws.send(JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }));
         break;
       case MessageType.DISCONNECT:
-        ws.send(JSON.stringify({ type: 'disconnect' }));
+        ws.send(JSON.stringify({ type: MessageType.DISCONNECT }));
+        break;
+      case MessageType.LIST_USERS:
+        ws.send(JSON.stringify({ type: MessageType.LIST_USERS }));
         break;
       case MessageType.QUIT:
         ws.close();
@@ -79,9 +92,10 @@ function askMessage(input: string) {
 
 function showCommands() {
   console.log('\nCommands:');
-  console.log('/connect <userId> - Connect to a user');
-  console.log('/disconnect - Disconnect from current user');
-  console.log('/quit - Exit the program');
+  console.log(`/${MessageType.CONNECT} <userId> - Connect to a user`);
+  console.log(`/${MessageType.DISCONNECT} - Disconnect from current user`);
+  console.log(`/${MessageType.LIST_USERS} - List available users`);
+  console.log(`/${MessageType.QUIT} - Exit the program`);
   console.log('Any other input will be sent as a message\n');
 
   rl.question('Enter command or message: ', askMessage);

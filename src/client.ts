@@ -4,6 +4,7 @@ dotenv.config();
 import WebSocket from 'ws';
 import readline from 'readline';
 import { MessageType } from './enums';
+import { isCommand, getCommand } from './commands';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -13,17 +14,23 @@ const rl = readline.createInterface({
 const ws = new WebSocket(`ws://localhost:${process.env.PORT}`);
 
 function askMessage(answer: string) {
-  if (answer.toLowerCase() === 'quit') {
-    ws.close();
-    rl.close();
-    process.exit(0);
+  if (isCommand(answer)) {
+    const command = getCommand(answer);
+    const args = answer.slice(command.length).trim().split(' ');
+
+    switch (command) {
+      case MessageType.QUIT:
+        ws.close();
+        rl.close();
+        process.exit(0);
+    }
   }
   ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: answer }));
 }
 
 ws.on('open', () => {
   console.log('Connected to server');
-  
+  showCommands()
   rl.question('Enter message (or "quit" to exit): ', askMessage);
 });
 
@@ -56,4 +63,12 @@ ws.on('message', (data) => {
       console.error('Error:', message.message);
       break;
   }
-}); 
+});
+
+function showCommands() {
+  console.log('\nCommands:');
+  console.log(`/${MessageType.QUIT} - Exit the program`);
+  console.log('Any other input will be sent as a message\n');
+
+  rl.question('Enter command or message: ', askMessage);
+} 

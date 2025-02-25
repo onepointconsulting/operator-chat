@@ -73,6 +73,10 @@ wss.on('connection', (ws: WebSocket) => {
         handleOperatorConnection(client, data.targetId, clients);
         break;
 
+      case MessageType.LIST_USERS:
+        ws.send(JSON.stringify({ type: MessageType.USERS_LIST, users: Array.from(clients.values()) }));
+        break;
+
       case MessageType.MESSAGE:
         const chatMessage: ChatMessage = {
           role: client.isOperator ? 'operator' : 'user',

@@ -10,6 +10,8 @@ export enum MessageType {
     CONNECTED = 'connected',
     DISCONNECT = 'disconnect',
     QUIT = 'quit',
+    LIST_USERS = 'list-users',
+    USERS_LIST = 'users-list',
 }
 
 export enum SupportedLLMProvider {
