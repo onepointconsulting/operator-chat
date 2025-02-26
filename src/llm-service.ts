@@ -1,8 +1,8 @@
-import OpenAI from 'openai';
-import { Client } from './types';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ChatMessage, LLMProvider } from './types';
-import { MessageType, SupportedLLMProvider,  } from './enums';
+import OpenAI from "openai";
+import { Client } from "./types";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ChatMessage, LLMProvider } from "./types";
+import { MessageType, SupportedLLMProvider } from "./enums";
 
 export class LLMService {
   private openai: OpenAI;
@@ -26,32 +26,42 @@ export class LLMService {
     if (this.currentProvider === SupportedLLMProvider.OPENAI) {
       const response = await this.openai.chat.completions.create({
         model: process.env.OPENAI_MODEL!,
-        messages: messages.map(m => ({
-          role: m.role === 'operator' ? 'user' : m.role,
-          content: m.content
-        } as const)),
+        messages: messages.map(
+          (m) =>
+            ({
+              role: m.role === "operator" ? "user" : m.role,
+              content: m.content,
+            }) as const,
+        ),
       });
-      return response.choices[0].message.content || '';
+      return response.choices[0].message.content || "";
     } else {
-      const model = this.gemini.getGenerativeModel({ model: process.env.GEMINI_MODEL! });
+      const model = this.gemini.getGenerativeModel({
+        model: process.env.GEMINI_MODEL!,
+      });
       const chat = model.startChat({
-        history: messages.map(m => ({
-          role: m.role === 'assistant' ? 'model' : m.role,
+        history: messages.map((m) => ({
+          role: m.role === "assistant" ? "model" : m.role,
           parts: [{ text: m.content }],
         })),
       });
-      const result = await chat.sendMessage(messages[messages.length - 1].content);
+      const result = await chat.sendMessage(
+        messages[messages.length - 1].content,
+      );
       return result.response.text();
     }
   }
 
-  async* openAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
+  async *openAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
     const stream = await this.openai.chat.completions.create({
       model: process.env.OPENAI_MODEL!,
-      messages: messages.map(m => ({
-        role: m.role === 'operator' ? 'user' : m.role,
-        content: m.content
-      } as const)),
+      messages: messages.map(
+        (m) =>
+          ({
+            role: m.role === "operator" ? "user" : m.role,
+            content: m.content,
+          }) as const,
+      ),
       stream: true,
     });
 
@@ -63,16 +73,20 @@ export class LLMService {
     }
   }
 
-  async* geminiAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
-    const model = this.gemini.getGenerativeModel({ model: process.env.GEMINI_MODEL! });
+  async *geminiAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
+    const model = this.gemini.getGenerativeModel({
+      model: process.env.GEMINI_MODEL!,
+    });
     const chat = model.startChat({
-      history: messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : m.role,
+      history: messages.map((m) => ({
+        role: m.role === "assistant" ? "model" : m.role,
         parts: [{ text: m.content }],
       })),
     });
 
-    const result = await chat.sendMessageStream(messages[messages.length - 1].content);
+    const result = await chat.sendMessageStream(
+      messages[messages.length - 1].content,
+    );
     for await (const chunk of result.stream) {
       const content = chunk.text();
       if (content) {
@@ -81,7 +95,9 @@ export class LLMService {
     }
   }
 
-  async* generateResponseStream(messages: ChatMessage[]): AsyncGenerator<string> {
+  async *generateResponseStream(
+    messages: ChatMessage[],
+  ): AsyncGenerator<string> {
     if (this.currentProvider === SupportedLLMProvider.OPENAI) {
       yield* this.openAiStream(messages);
     } else {
@@ -92,40 +108,47 @@ export class LLMService {
   async handleLLMResponse(client: Client, messages: ChatMessage[]) {
     try {
       // Send a start marker
-      client.ws.send(JSON.stringify({
-        type: MessageType.STREAM_START,
-        message: { role: 'assistant', content: '' }
-      }));
+      client.ws.send(
+        JSON.stringify({
+          type: MessageType.STREAM_START,
+          message: { role: "assistant", content: "" },
+        }),
+      );
 
-      let fullResponse = '';
+      let fullResponse = "";
       for await (const chunk of this.generateResponseStream(messages)) {
         fullResponse += chunk;
         // Send each chunk to the client
-        client.ws.send(JSON.stringify({
-          type: MessageType.STREAM_CHUNK,
-          chunk
-        }));
+        client.ws.send(
+          JSON.stringify({
+            type: MessageType.STREAM_CHUNK,
+            chunk,
+          }),
+        );
       }
 
       // Send the complete message for history
       const aiMessage: ChatMessage = {
-        role: 'assistant',
-        content: fullResponse
+        role: "assistant",
+        content: fullResponse,
       };
       client.chatHistory.push(aiMessage);
 
       // Send end marker
-      client.ws.send(JSON.stringify({
-        type: MessageType.STREAM_END,
-        message: aiMessage
-      }));
+      client.ws.send(
+        JSON.stringify({
+          type: MessageType.STREAM_END,
+          message: aiMessage,
+        }),
+      );
     } catch (error) {
-      console.error('Error in streaming response:', error);
-      client.ws.send(JSON.stringify({
-        type: MessageType.STREAM_END,
-        message: 'Error generating response'
-      }));
+      console.error("Error in streaming response:", error);
+      client.ws.send(
+        JSON.stringify({
+          type: MessageType.STREAM_END,
+          message: "Error generating response",
+        }),
+      );
     }
   }
-
-} 
+}

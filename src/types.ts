@@ -1,7 +1,7 @@
-import { WebSocket } from 'ws';
-import { SupportedLLMProvider } from './enums';
+import { WebSocket } from "ws";
+import { SupportedLLMProvider } from "./enums";
 export interface ChatMessage {
-  role: 'user' | 'assistant' | 'operator';
+  role: "user" | "assistant" | "operator";
   content: string;
 }
 
@@ -11,6 +11,9 @@ export interface Client {
   chatHistory: ChatMessage[];
   isOperator: boolean;
   connectedTo?: string;
+  name?: string;
 }
 
-export type LLMProvider = SupportedLLMProvider.OPENAI | SupportedLLMProvider.GEMINI; 
+export type LLMProvider =
+  | SupportedLLMProvider.OPENAI
+  | SupportedLLMProvider.GEMINI;
