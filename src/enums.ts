@@ -17,6 +17,12 @@ export enum MessageType {
   SET_NAME = "set-name",
 }
 
+export enum MessageSubtype {
+  OPERATOR_DISCONNECTED = "operatorDisconnected",
+  OPERATOR_CONNECTED = "operatorConnected",
+  STREAM_END_ERROR = "streamEndError",
+}
+
 export enum SupportedLLMProvider {
   OPENAI = "openai",
   GEMINI = "gemini",

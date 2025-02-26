@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { Client } from "./types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, LLMProvider } from "./types";
-import { MessageType, SupportedLLMProvider } from "./enums";
+import { MessageSubtype, MessageType, SupportedLLMProvider } from "./enums";
 
 export class LLMService {
   private openai: OpenAI;
@@ -146,6 +146,7 @@ export class LLMService {
       client.ws.send(
         JSON.stringify({
           type: MessageType.STREAM_END,
+          subType: MessageSubtype.STREAM_END_ERROR,
           message: "Error generating response",
         }),
       );

@@ -3,7 +3,7 @@ dotenv.config();
 
 import WebSocket from "ws";
 import readline from "readline";
-import { MessageType } from "./enums";
+import { MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
 
 const rl = readline.createInterface({
@@ -43,8 +43,16 @@ ws.on("message", (data) => {
       break;
 
     case MessageType.MESSAGE:
-      const { clientId } = message;
-      console.log(`\n${clientId}: `, message.message?.content);
+      const { clientId, subType } = message;
+      if (subType) {
+        switch (subType) {
+          case MessageSubtype.OPERATOR_DISCONNECTED:
+            console.log("Disconnected");
+            break;
+        }
+      } else {
+        console.log(`\n${clientId}: `, message.message?.content);
+      }
       break;
 
     case MessageType.MESSAGE_SENT:

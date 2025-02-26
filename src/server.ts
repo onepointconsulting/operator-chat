@@ -6,7 +6,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { Client, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
-import { MessageType } from "./enums";
+import { MessageSubtype, MessageType } from "./enums";
 
 const app = express();
 const wss = new WebSocketServer({ noServer: true });
@@ -46,7 +46,7 @@ function handleOperatorConnection(
     targetClient.ws.send(
       JSON.stringify({
         type: MessageType.MESSAGE,
-        subType: "operatorConnected",
+        subType: MessageSubtype.OPERATOR_CONNECTED,
       }),
     );
   }
@@ -178,12 +178,15 @@ wss.on("connection", (ws: WebSocket) => {
           const target = clients.get(client.connectedTo);
           if (target) {
             target.connectedTo = undefined;
-            target.ws.send(
-              JSON.stringify({
-                type: MessageType.MESSAGE,
-                subType: "operatorDisconnected",
-              }),
-            );
+            const targets = [target, client];
+            for (const target of targets) {
+              target.ws.send(
+                JSON.stringify({
+                  type: MessageType.MESSAGE,
+                  subType: MessageSubtype.OPERATOR_DISCONNECTED,
+                }),
+              );
+            }
           }
           client.connectedTo = undefined;
         }
@@ -199,7 +202,7 @@ wss.on("connection", (ws: WebSocket) => {
         target.ws.send(
           JSON.stringify({
             type: MessageType.MESSAGE,
-            subType: "operatorDisconnected",
+            subType: MessageSubtype.OPERATOR_DISCONNECTED,
           }),
         );
       }

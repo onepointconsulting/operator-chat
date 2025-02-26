@@ -3,7 +3,7 @@ dotenv.config();
 
 import WebSocket from "ws";
 import readline from "readline";
-import { MessageType } from "./enums";
+import { MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
 
 const rl = readline.createInterface({
@@ -35,6 +35,10 @@ function askMessage(input: string) {
       case MessageType.SET_NAME:
         ws.send(JSON.stringify({ type: MessageType.SET_NAME, name: args[0] }));
         break;
+
+      case MessageType.DISCONNECT:
+        ws.send(JSON.stringify({ type: MessageType.DISCONNECT }));
+        break;
     }
   } else {
     ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input }));
@@ -61,14 +65,23 @@ ws.on("message", (data) => {
 
     case MessageType.STREAM_END:
       process.stdout.write("\n\n");
+      if (message.subType === MessageSubtype.STREAM_END_ERROR) {
+        console.error("Error:", message.message);
+      }
       messagePrompt();
       break;
 
     case MessageType.MESSAGE:
-      if (message.message) {
-        console.log(`\n${message.message.role}: ${message.message.content}`);
+      if (
+        message.subType === MessageSubtype.OPERATOR_DISCONNECTED
+      ) {
+        console.log("Disconnected");
       } else {
-        console.log("Server:", message);
+        if (message.message) {
+          console.log(`\n${message.message.role}: ${message.message.content}`);
+        } else {
+          console.log("Server:", message);
+        }
       }
       messagePrompt();
       break;
@@ -100,6 +113,7 @@ ws.on("message", (data) => {
 function showCommands() {
   console.log("\nCommands:");
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
+  console.log(`/${MessageType.DISCONNECT} - List available operators`);
   logCommonCommands();
   console.log("Any other input will be sent as a message\n");
   rl.question("Enter command or message: ", askMessage);
