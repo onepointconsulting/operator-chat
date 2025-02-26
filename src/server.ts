@@ -22,7 +22,12 @@ function handleOperatorConnection(
   targetId: string,
   clients: Map<string, Client>,
 ) {
-  if (!client.isOperator || client.connectedTo) return;
+  if (client.connectedTo) {
+    client.ws.send(
+      JSON.stringify({ type: MessageType.ERROR, message: "You are already connected to a user." }),
+    );
+    return;
+  };
 
   const targetClient = clients.get(targetId);
   if (!targetClient) {
