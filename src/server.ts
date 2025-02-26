@@ -1,15 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express";
 import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { Client, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
 
-const app = express();
-const wss = new WebSocketServer({ noServer: true });
+export const wss = new WebSocketServer({ noServer: true });
 const clients = new Map<string, Client>();
 const llmService = new LLMService();
 
@@ -186,9 +184,9 @@ wss.on("connection", (ws: WebSocket) => {
                   subType: MessageSubtype.OPERATOR_DISCONNECTED,
                 }),
               );
+              target.connectedTo = undefined;
             }
           }
-          client.connectedTo = undefined;
         }
         break;
     }
@@ -211,10 +209,4 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-const server = app.listen(process.env.PORT || 3000);
 
-server.on("upgrade", (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit("connection", ws, request);
-  });
-});

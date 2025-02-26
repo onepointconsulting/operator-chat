@@ -4,6 +4,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, LLMProvider } from "./types";
 import { MessageSubtype, MessageType, SupportedLLMProvider } from "./enums";
 
+function convertMessage(role: string) {
+  return role === "operator" ? "user" : role;
+}
+
 export class LLMService {
   private openai: OpenAI;
   private gemini: GoogleGenerativeAI;
@@ -41,7 +45,7 @@ export class LLMService {
       });
       const chat = model.startChat({
         history: messages.map((m) => ({
-          role: m.role === "assistant" ? "model" : m.role,
+          role: convertMessage(m.role),
           parts: [{ text: m.content }],
         })),
       });
@@ -58,7 +62,7 @@ export class LLMService {
       messages: messages.map(
         (m) =>
           ({
-            role: m.role === "operator" ? "user" : m.role,
+            role: (m.role) === "operator" ? "user" : m.role,
             content: m.content,
           }) as const,
       ),
@@ -79,7 +83,7 @@ export class LLMService {
     });
     const chat = model.startChat({
       history: messages.map((m) => ({
-        role: m.role === "assistant" ? "model" : m.role,
+        role: convertMessage(m.role === "assistant" ? "model" : m.role),
         parts: [{ text: m.content }],
       })),
     });
