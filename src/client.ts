@@ -39,6 +39,10 @@ function askMessage(input: string) {
       case MessageType.DISCONNECT:
         ws.send(JSON.stringify({ type: MessageType.DISCONNECT }));
         break;
+
+      case MessageType.CONNECT:
+        ws.send(JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }));
+        break;
     }
   } else {
     ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input }));
@@ -103,6 +107,11 @@ ws.on("message", (data) => {
       messagePrompt();
       break;
 
+    case MessageType.CONNECTED:
+      console.log(`Connected to ${message.targetId}`);
+      messagePrompt();
+      break;
+
     case MessageType.ERROR:
       console.error("Error:", message.message);
       messagePrompt();
@@ -113,6 +122,7 @@ ws.on("message", (data) => {
 function showCommands() {
   console.log("\nCommands:");
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
+  console.log(`/${MessageType.CONNECT} <userId> - Connect to an operator`);
   console.log(`/${MessageType.DISCONNECT} - List available operators`);
   logCommonCommands();
   console.log("Any other input will be sent as a message\n");
