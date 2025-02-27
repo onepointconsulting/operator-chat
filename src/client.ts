@@ -3,7 +3,7 @@ dotenv.config();
 
 import WebSocket from "ws";
 import readline from "readline";
-import { MessageSubtype, MessageType } from "./enums";
+import { Command, MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
 import { Config } from "./config";
 const rl = readline.createInterface({
@@ -44,6 +44,11 @@ function askMessage(input: string) {
         ws.send(
           JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }),
         );
+        break;
+
+      case Command.HELP:
+        showCommands();
+        messagePrompt();
         break;
 
       default:
@@ -128,6 +133,7 @@ function showCommands() {
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
   console.log(`/${MessageType.CONNECT} <userId> - Connect to an operator`);
   console.log(`/${MessageType.DISCONNECT} - List available operators`);
+  console.log(`/${Command.HELP} - Show the help menu`);
   logCommonCommands();
   console.log("Any other input will be sent as a message\n");
   rl.question("Enter command or message: ", askMessage);

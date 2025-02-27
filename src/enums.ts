@@ -17,6 +17,10 @@ export enum MessageType {
   SET_NAME = "set-name",
 }
 
+export enum Command {
+  HELP = "help",
+}
+
 export enum MessageSubtype {
   OPERATOR_DISCONNECTED = "operatorDisconnected",
   OPERATOR_CONNECTED = "operatorConnected",
