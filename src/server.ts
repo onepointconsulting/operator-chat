@@ -24,10 +24,13 @@ function handleOperatorConnection(
 ) {
   if (client.connectedTo) {
     client.ws.send(
-      JSON.stringify({ type: MessageType.ERROR, message: "You are already connected to a user." }),
+      JSON.stringify({
+        type: MessageType.ERROR,
+        message: "You are already connected to a user.",
+      }),
     );
     return;
-  };
+  }
 
   const targetClient = clients.get(targetId);
   if (!targetClient) {
@@ -121,6 +124,34 @@ async function handleChatMessage(
   }
 }
 
+/**
+ * Handles the request to list all connected users.
+ * @param ws - The WebSocket connection to send the response to.
+ * @param clients - Map of all connected clients.
+ */
+function handleListUsers(ws: WebSocket, clients: Map<string, Client>) {
+  ws.send(
+    JSON.stringify({
+      type: MessageType.USERS_LIST,
+      users: Array.from(clients.values()).filter((c) => !c.isOperator),
+    }),
+  );
+}
+
+/**
+ * Handles the request to list all connected operators.
+ * @param ws - The WebSocket connection to send the response to.
+ * @param clients - Map of all connected clients.
+ */
+function handleListOperators(ws: WebSocket, clients: Map<string, Client>) {
+  ws.send(
+    JSON.stringify({
+      type: MessageType.LIST_OPERATORS,
+      operators: Array.from(clients.values()).filter((c) => c.isOperator),
+    }),
+  );
+}
+
 wss.on("connection", (ws: WebSocket) => {
   const clientId = uuidv4();
   const client: Client = {
@@ -132,6 +163,7 @@ wss.on("connection", (ws: WebSocket) => {
   clients.set(clientId, client);
 
   ws.on("message", async (message: string) => {
+    console.log(`Received message: ${message}`);
     const data = JSON.parse(message);
 
     switch (data.type) {
@@ -144,21 +176,11 @@ wss.on("connection", (ws: WebSocket) => {
         break;
 
       case MessageType.LIST_USERS:
-        ws.send(
-          JSON.stringify({
-            type: MessageType.USERS_LIST,
-            users: Array.from(clients.values()),
-          }),
-        );
+        handleListUsers(ws, clients);
         break;
 
       case MessageType.LIST_OPERATORS:
-        ws.send(
-          JSON.stringify({
-            type: MessageType.LIST_OPERATORS,
-            operators: Array.from(clients.values()).filter((c) => c.isOperator),
-          }),
-        );
+        handleListOperators(ws, clients);
         break;
 
       case MessageType.MESSAGE:
@@ -194,6 +216,14 @@ wss.on("connection", (ws: WebSocket) => {
           }
         }
         break;
+
+      default:
+        client.ws.send(
+          JSON.stringify({
+            type: MessageType.ERROR,
+            message: "Invalid command.",
+          }),
+        );
     }
   });
 
@@ -213,5 +243,3 @@ wss.on("connection", (ws: WebSocket) => {
     clients.delete(clientId);
   });
 });
-
-

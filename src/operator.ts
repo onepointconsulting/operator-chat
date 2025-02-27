@@ -114,6 +114,9 @@ function askMessage(input: string) {
         ws.close();
         rl.close();
         process.exit(0);
+      default:
+        console.error(`Unrecognized command: ${command}`);
+        messagePrompt();
     }
   } else {
     ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input }));

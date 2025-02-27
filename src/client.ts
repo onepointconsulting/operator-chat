@@ -41,8 +41,14 @@ function askMessage(input: string) {
         break;
 
       case MessageType.CONNECT:
-        ws.send(JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }));
+        ws.send(
+          JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }),
+        );
         break;
+
+      default:
+        console.error(`Unrecognized command: ${command}`);
+        messagePrompt();
     }
   } else {
     ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input }));
@@ -76,9 +82,7 @@ ws.on("message", (data) => {
       break;
 
     case MessageType.MESSAGE:
-      if (
-        message.subType === MessageSubtype.OPERATOR_DISCONNECTED
-      ) {
+      if (message.subType === MessageSubtype.OPERATOR_DISCONNECTED) {
         console.log("Disconnected");
       } else {
         if (message.message) {
