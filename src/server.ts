@@ -1,12 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { Client, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
-
+import { Config } from "./config";
+import { readPrompts } from "./prompts";
 export const wss = new WebSocketServer({ noServer: true });
 const clients = new Map<string, Client>();
 const llmService = new LLMService();
@@ -65,7 +63,7 @@ function handleOperatorConnection(
  * @returns The authentication response message.
  */
 function handleOperatorAuth(client: Client, password: string) {
-  const correctPassword = password === process.env.OPERATOR_PASSWORD;
+  const correctPassword = password === Config.OPERATOR_PASSWORD;
   client.isOperator = correctPassword;
   return JSON.stringify({
     type: MessageType.LOGIN_RESPONSE,
@@ -152,12 +150,14 @@ function handleListOperators(ws: WebSocket, clients: Map<string, Client>) {
   );
 }
 
+const BASIC_SYSTEM_MESSAGE = (readPrompts().basic as any).system_message;
+
 wss.on("connection", (ws: WebSocket) => {
   const clientId = uuidv4();
   const client: Client = {
     id: clientId,
     ws,
-    chatHistory: [],
+    chatHistory: [{ role: "system", content: BASIC_SYSTEM_MESSAGE }],
     isOperator: false,
   };
   clients.set(clientId, client);

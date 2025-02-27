@@ -3,14 +3,18 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMessage, LLMProvider } from "./types";
 import { MessageSubtype, MessageType, SupportedLLMProvider } from "./enums";
 import { Client } from "./types";
+import { Config } from "./config";
 
-function convertMessage(role: string) {
+function convertMessage(role: string, provider: LLMProvider) {
+  if (provider === SupportedLLMProvider.GEMINI && role === "system") {
+    return "user";
+  }
   return role === "operator" ? "user" : role;
 }
 
-function prepareMessages(messages: ChatMessage[]) {
+function prepareMessages(messages: ChatMessage[], provider: LLMProvider) {
   return messages.map((m) => ({
-    role: convertMessage(m.role),
+    role: convertMessage(m.role, provider),
     content: m.content,
   }));
 }
@@ -22,14 +26,14 @@ export class LLMService {
 
   constructor() {
     this.openai = new ChatOpenAI({
-      model: process.env.OPENAI_MODEL!,
-      apiKey: process.env.OPENAI_API_KEY!,
+      model: Config.OPENAI_MODEL!,
+      apiKey: Config.OPENAI_API_KEY!,
     });
     this.gemini = new ChatGoogleGenerativeAI({
-      apiKey: process.env.GEMINI_API_KEY!,
-      modelName: process.env.GEMINI_MODEL!,
+      apiKey: Config.GEMINI_API_KEY!,
+      modelName: Config.GEMINI_MODEL!,
     });
-    this.currentProvider = process.env.INITIAL_PROVIDER as LLMProvider;
+    this.currentProvider = Config.INITIAL_PROVIDER as LLMProvider;
   }
 
   setProvider(provider: LLMProvider) {
@@ -41,8 +45,7 @@ export class LLMService {
   }
 
   async generateResponse(messages: ChatMessage[]): Promise<string> {
-    const formattedMessages = prepareMessages(messages);
-
+    const formattedMessages = prepareMessages(messages, this.currentProvider);
     if (this.currentProvider === SupportedLLMProvider.OPENAI) {
       const response = await this.openai.invoke(formattedMessages);
       return typeof response.content === "string"
@@ -67,12 +70,12 @@ export class LLMService {
   }
 
   async *openAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
-    const stream = await this.openai.stream(prepareMessages(messages));
+    const stream = await this.openai.stream(prepareMessages(messages, SupportedLLMProvider.OPENAI));
     yield* this.processStreamChunks(stream);
   }
 
   async *geminiAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
-    const stream = await this.gemini.stream(prepareMessages(messages));
+    const stream = await this.gemini.stream(prepareMessages(messages, SupportedLLMProvider.GEMINI));
     yield* this.processStreamChunks(stream);
   }
 

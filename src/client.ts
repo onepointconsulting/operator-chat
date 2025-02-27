@@ -5,13 +5,13 @@ import WebSocket from "ws";
 import readline from "readline";
 import { MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
-
+import { Config } from "./config";
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const ws = new WebSocket(`ws://localhost:${process.env.PORT}`);
+const ws = new WebSocket(`ws://localhost:${Config.PORT}`);
 
 function messagePrompt() {
   rl.question('Enter message (or "/quit" to exit): ', askMessage);

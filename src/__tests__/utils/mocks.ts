@@ -2,29 +2,27 @@ import { LLMService } from "../../llm-service";
 import { ChatMessage } from "../../types";
 
 export const mockChatMessage: ChatMessage = {
-  role: 'user',
-  content: 'Hello, how are you?'
+  role: "user",
+  content: "Hello, how are you?",
 };
 
 export const mockClient = {
-  id: 'test-id',
+  id: "test-id",
   ws: {
-    send: jest.fn()
+    send: jest.fn(),
   },
   chatHistory: [],
-  isOperator: false
-}; 
+  isOperator: false,
+};
 
-describe('LLMService', () => {
-    let llmService: LLMService;
+describe("LLMService", () => {
+  let llmService: LLMService;
 
-    beforeEach(() => {
-        llmService = new LLMService();
-    });
+  beforeEach(() => {
+    llmService = new LLMService();
+  });
 
-    it('should initialize with default provider', () => {
-        expect(llmService).toBeDefined();
-    });
-    
-    
-})
+  it("should initialize with default provider", () => {
+    expect(llmService).toBeDefined();
+  });
+});
