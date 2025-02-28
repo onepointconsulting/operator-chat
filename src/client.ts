@@ -6,12 +6,15 @@ import readline from "readline";
 import { Command, MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
 import { Config } from "./config";
+import { setupDisconnectHandlers } from "./disconnectHandlers";
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
 const ws = new WebSocket(`ws://localhost:${Config.PORT}`);
+setupDisconnectHandlers(ws, rl);
 
 function messagePrompt() {
   rl.question('Enter message (or "/quit" to exit): ', askMessage);
