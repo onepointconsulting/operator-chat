@@ -3,6 +3,7 @@ import { Client, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
 import { Config } from "./config";
+import { globalCallbacks } from "./main";
 
 /**
  * Handles the connection between an operator and a user.
@@ -85,6 +86,11 @@ export async function handleChatMessage(
   };
 
   client.chatHistory.push(chatMessage);
+
+  globalCallbacks.forEach((callback) => {
+    const func = callback.callback;
+    func(client.chatHistory);
+  });
 
   if (client.connectedTo) {
     const target = clients.get(client.connectedTo);
