@@ -36,7 +36,7 @@ export async function wikiSearch(
     console.error(text);
     return chatHistory;
   }
-  const data = await response.json();
+  const data: any = await response.json();
   if (data.query.search) {
     const enhancedSearchResult = enhanceSearchResult(data.query.search);
     // Manipulate the last message to include the Wikipedia information
