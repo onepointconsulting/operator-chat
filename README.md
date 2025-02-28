@@ -44,10 +44,15 @@ yarn install
 OPENAI_API_KEY=<key>
 OPENAI_MODEL=gpt-4o-mini
 INITIAL_PROVIDER=openai
+# INITIAL_PROVIDER=gemini
 GEMINI_API_KEY=<key>
+GEMINI_MODEL=gemini-1.5-flash
 
-OPERATOR_PASSWORD=<password>
-PORT=<port>
+OPERATOR_PASSWORD=<pass>
+PORT=4000
+
+PROMPT_FILE=config/prompts.toml
+SLICE_SIZE=5
 ```
 
 ## Usage

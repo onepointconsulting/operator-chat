@@ -13,4 +13,4 @@ export function setupDisconnectHandlers(ws: WebSocket, rl: Interface) {
     rl.close();
     process.exit(1);
   });
-} 
+}

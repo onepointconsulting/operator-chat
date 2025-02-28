@@ -10,4 +10,5 @@ export class Config {
   static readonly OPERATOR_PASSWORD = process.env.OPERATOR_PASSWORD;
   static readonly PORT = process.env.PORT;
   static readonly PROMPT_FILE = process.env.PROMPT_FILE;
+  static readonly SLICE_SIZE = parseInt(process.env.SLICE_SIZE ?? "10");
 }

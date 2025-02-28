@@ -23,7 +23,11 @@ describe("Config", () => {
     for (const [key, value] of configValues) {
       expect(value).toBeDefined();
       expect(value).not.toBeNull();
-      expect(typeof value).toBe("string");
+      if (key === "SLICE_SIZE") {
+        expect(typeof value).toBe("number");
+      } else {
+        expect(typeof value).toBe("string");
+      }
     }
   });
 });

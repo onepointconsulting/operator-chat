@@ -2,29 +2,32 @@ import { ChatMessage } from "../types";
 
 function enhanceSearchResult(searchResult: any[]): string {
   return `
-  ${searchResult.map((result) => {
-    return `
+  ${searchResult
+    .map((result) => {
+      return `
     Title: ${result.title}
     Snippet: ${result.snippet}
     Page ID: ${result.pageid}
     English URL: https://en.wikipedia.org/wiki?curid=${result.pageid}
 
-    `
-  }).join("\n")}
-  `
+    `;
+    })
+    .join("\n")}
+  `;
 }
 
-
-export async function wikiSearch(chatHistory: ChatMessage[]): Promise<ChatMessage[]> {
+export async function wikiSearch(
+  chatHistory: ChatMessage[],
+): Promise<ChatMessage[]> {
   const lastMessage = chatHistory.slice(-1)[0];
 
-  const url = "https://en.wikipedia.org/w/api.php"
+  const url = "https://en.wikipedia.org/w/api.php";
 
   const params = new URLSearchParams({
     action: "query",
     list: "search",
     srsearch: lastMessage.content,
-    format: "json"
+    format: "json",
   });
 
   const response = await fetch(`${url}?${params}`);
@@ -44,7 +47,7 @@ Here is some extra information about the topic from Wikipedia which you can use 
 ${enhancedSearchResult}
 
 Please use this information to answer the user's question and give references to the sources.
-`
+`;
   }
   return chatHistory;
-} 
+}

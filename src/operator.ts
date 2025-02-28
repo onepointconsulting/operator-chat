@@ -5,6 +5,7 @@ import WebSocket from "ws";
 import readline from "readline";
 import { MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
+import { setupDisconnectHandlers } from "./disconnectHandlers";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -12,6 +13,7 @@ const rl = readline.createInterface({
 });
 
 const ws = new WebSocket(`ws://localhost:${process.env.PORT}`);
+setupDisconnectHandlers(ws, rl);
 
 function authenticateOperator() {
   rl.question("Enter operator password: ", (password) => {
