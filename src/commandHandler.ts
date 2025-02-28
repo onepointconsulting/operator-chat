@@ -87,10 +87,10 @@ export async function handleChatMessage(
 
   client.chatHistory.push(chatMessage);
 
-  globalCallbacks.forEach((callback) => {
-    const func = callback.callback;
-    func(client.chatHistory);
-  });
+  for (const callback of globalCallbacks) {
+    const promise = callback.callback;
+    await promise(client.chatHistory);
+  }
 
   if (client.connectedTo) {
     const target = clients.get(client.connectedTo);
@@ -142,7 +142,10 @@ export function handleListUsers(ws: WebSocket, clients: Map<string, Client>) {
  * @param ws - The WebSocket connection to send the response to.
  * @param clients - Map of all connected clients.
  */
-export function handleListOperators(ws: WebSocket, clients: Map<string, Client>) {
+export function handleListOperators(
+  ws: WebSocket,
+  clients: Map<string, Client>,
+) {
   ws.send(
     JSON.stringify({
       type: MessageType.LIST_OPERATORS,
@@ -187,4 +190,4 @@ export function handleSetName(client: Client, name: string) {
     clientId: client.id,
     name: client.name,
   });
-} 
+}

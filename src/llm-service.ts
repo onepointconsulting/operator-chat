@@ -70,12 +70,16 @@ export class LLMService {
   }
 
   async *openAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
-    const stream = await this.openai.stream(prepareMessages(messages, SupportedLLMProvider.OPENAI));
+    const stream = await this.openai.stream(
+      prepareMessages(messages, SupportedLLMProvider.OPENAI),
+    );
     yield* this.processStreamChunks(stream);
   }
 
   async *geminiAiStream(messages: ChatMessage[]): AsyncGenerator<string> {
-    const stream = await this.gemini.stream(prepareMessages(messages, SupportedLLMProvider.GEMINI));
+    const stream = await this.gemini.stream(
+      prepareMessages(messages, SupportedLLMProvider.GEMINI),
+    );
     yield* this.processStreamChunks(stream);
   }
 

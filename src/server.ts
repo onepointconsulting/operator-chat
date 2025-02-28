@@ -11,7 +11,7 @@ import {
   handleListUsers,
   handleListOperators,
   handleDisconnect,
-  handleSetName
+  handleSetName,
 } from "./commandHandler";
 
 export const wss = new WebSocketServer({ noServer: true });
