@@ -6,6 +6,7 @@ export class ChatCallback {
     private readonly _callback: (
       chatHistory: ChatMessage[],
     ) => Promise<ChatMessage[]>,
+    private readonly _isOperator: boolean = false,
   ) {
     this._id = _id;
     this._callback = _callback;
@@ -17,5 +18,9 @@ export class ChatCallback {
 
   get callback(): (chatHistory: ChatMessage[]) => Promise<ChatMessage[]> {
     return this._callback;
+  }
+
+  get isOperator(): boolean {
+    return this._isOperator;
   }
 }

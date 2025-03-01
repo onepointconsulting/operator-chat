@@ -87,7 +87,14 @@ export async function handleChatMessage(
 
   client.chatHistory.push(chatMessage);
 
-  for (const callback of globalCallbacks) {
+  const activeCallbacks = globalCallbacks.filter((callback) => {
+    if (!callback.isOperator && client.connectedTo) {
+      return false;
+    }
+    return true;
+  })
+
+  for (const callback of activeCallbacks) {
     const promise = callback.callback;
     await promise(client.chatHistory);
   }
