@@ -44,7 +44,7 @@ yarn install
 OPENAI_API_KEY=<key>
 OPENAI_MODEL=gpt-4o-mini
 INITIAL_PROVIDER=openai
-# INITIAL_PROVIDER=gemini
+# INITIAL_PROVIDER=gemini # uncomment this to use gemini
 GEMINI_API_KEY=<key>
 GEMINI_MODEL=gemini-1.5-flash
 
@@ -73,6 +73,8 @@ Operator Commands:
 - `/connect <userId>` - Connect to a specific user
 - `/disconnect` - Disconnect from the current user
 - `/quit` - Exit the operator interface
+- `/help` - Show the help menu
+- `/set-name <name>` - Set your name
 - Any other input will be sent as a message to the connected user
 
 3. Start the user client:
