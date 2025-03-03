@@ -28,7 +28,7 @@ A TypeScript-based WebSocket server that enables chat functionality with both AI
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/chat-websocket-server.git
+git clone https://github.com/onepointconsulting/operator-chat
 cd chat-websocket-server
 ```
 
