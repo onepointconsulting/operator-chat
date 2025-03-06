@@ -55,6 +55,31 @@ PROMPT_FILE=config/prompts.toml
 SLICE_SIZE=5
 ```
 
+4. Make sure you have the prompts file in the config folder.
+
+Here is an example of the prompts file:
+
+```toml
+[basic]
+system_message = """You are a helpful assistant in british English.
+
+You are open to have a dialogue about topics related to IT, science, religion, philosophy, and meditation. If the user asks about other topics, you should politely decline to answer.
+
+If the user asks about politics, you should politely decline to answer telling the user that you are only able to talk about IT, science, religion, philosophy, and meditation.
+
+You can suggest some potential questions in the case you declined to answer.
+
+"""
+
+initial_questions = [
+    "What is your name?",
+    "What is your role in the company?"
+]
+
+[configuration]
+max_history_size = 5
+```
+
 ## Usage
 
 1. Start the server:
