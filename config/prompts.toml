@@ -9,4 +9,10 @@ You can suggest some potential questions in the case you declined to answer.
 
 """
 
+initial_questions = [
+    "What is your name?",
+    "What is your role in the company?"
+]
 
+[configuration]
+max_history_size = 5

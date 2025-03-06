@@ -4,6 +4,7 @@ import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
 import { Config } from "./config";
 import { globalCallbacks } from "./main";
+import { sliceHistory } from "./history";
 
 /**
  * Handles the connection between an operator and a user.
@@ -87,17 +88,9 @@ export async function handleChatMessage(
 
   client.chatHistory.push(chatMessage);
 
-  const activeCallbacks = globalCallbacks.filter((callback) => {
-    if (!callback.isOperator && client.connectedTo) {
-      return false;
-    }
-    return true;
-  })
-
-  for (const callback of activeCallbacks) {
-    const promise = callback.callback;
-    await promise(client.chatHistory);
-  }
+  sliceHistory(client);
+  // Execute all applicable callbacks
+  await handleCallbacks(client);
 
   if (client.connectedTo) {
     const target = clients.get(client.connectedTo);
@@ -117,6 +110,7 @@ export async function handleChatMessage(
       );
     }
   } else {
+    // The user is not connected to any operator.
     if (client.isOperator) {
       client.ws.send(
         JSON.stringify({
@@ -125,7 +119,10 @@ export async function handleChatMessage(
         }),
       );
     } else {
-      await llmService.handleLLMResponse(client, client.chatHistory);
+      // The user is not an operator.
+      if (!askPredefinedQuestion(client.ws, client)) {
+        await llmService.handleLLMResponse(client, client.chatHistory);
+      }
     }
   }
 }
@@ -197,4 +194,53 @@ export function handleSetName(client: Client, name: string) {
     clientId: client.id,
     name: client.name,
   });
+}
+
+/**
+ * Asks a predefined question to the user.
+ * @param ws - The WebSocket connection to send the response to.
+ * @param clients - Map of all connected clients.
+ */
+export function askPredefinedQuestion(ws: WebSocket, client: Client): boolean {
+  const questions = client.predefinedQuestions;
+  if (!questions || questions.length === 0) {
+    return false;
+  }
+  const question = questions[0];
+  client.predefinedQuestions = questions.slice(1);
+  client.chatHistory.push({
+    role: "system",
+    content: question,
+  });
+  ws.send(
+    JSON.stringify({
+      type: MessageType.MESSAGE,
+      message: {
+        role: "system",
+        content: question,
+      },
+    }),
+  );
+  return true;
+}
+
+/**
+ * Executes all applicable callbacks for a client
+ * @param client - The client to execute callbacks for
+ * @returns The updated chat history after all callbacks have been executed
+ */
+export async function handleCallbacks(client: Client) {
+  // Filter callbacks that should be executed
+  const activeCallbacks = globalCallbacks.filter((callback) => {
+    if (!callback.isOperator && client.connectedTo) {
+      return false;
+    }
+    return true;
+  });
+
+  // Execute callbacks sequentially
+  for (const callback of activeCallbacks) {
+    const promise = callback.callback;
+    client.chatHistory = await promise(client.chatHistory);
+  }
 }

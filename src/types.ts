@@ -13,8 +13,19 @@ export interface Client {
   isOperator: boolean;
   connectedTo?: string;
   name?: string;
+  predefinedQuestions?: string[];
 }
 
 export type LLMProvider =
   | SupportedLLMProvider.OPENAI
   | SupportedLLMProvider.GEMINI;
+
+export interface PromtConfig {
+  basic: {
+    system_message: string;
+    initial_questions: string[];
+  };
+  configuration: {
+    max_history_size: number;
+  };
+}

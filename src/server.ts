@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Client } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
-import { readPrompts } from "./prompts";
+import { getInitialQuestions, readPrompts } from "./prompts";
 import {
   handleOperatorConnection,
   handleOperatorAuth,
@@ -12,6 +12,7 @@ import {
   handleListOperators,
   handleDisconnect,
   handleSetName,
+  askPredefinedQuestion,
 } from "./commandHandler";
 
 export const wss = new WebSocketServer({ noServer: true });
@@ -27,8 +28,11 @@ wss.on("connection", (ws: WebSocket) => {
     ws,
     chatHistory: [{ role: "system", content: BASIC_SYSTEM_MESSAGE }],
     isOperator: false,
+    predefinedQuestions: getInitialQuestions(),
   };
   clients.set(clientId, client);
+
+  askPredefinedQuestion(ws, client);
 
   ws.on("message", async (message: string) => {
     console.log(`Received message: ${message}`);
