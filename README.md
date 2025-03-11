@@ -55,6 +55,8 @@ PROMPT_FILE=config/prompts.toml
 SLICE_SIZE=5
 ```
 
+You can use the [`.env_local`](.env_local) file as a template to create your own `.env` file.
+
 4. Make sure you have the prompts file in the config folder.
 
 Here is an example of the prompts file:

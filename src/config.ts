@@ -8,7 +8,10 @@ export class Config {
   static readonly GEMINI_MODEL = process.env.GEMINI_MODEL;
   static readonly INITIAL_PROVIDER = process.env.INITIAL_PROVIDER;
   static readonly OPERATOR_PASSWORD = process.env.OPERATOR_PASSWORD;
+  
+  static readonly SERVER = process.env.SERVER;
   static readonly PORT = process.env.PORT;
+
   static readonly PROMPT_FILE = process.env.PROMPT_FILE;
   static readonly SLICE_SIZE = parseInt(process.env.SLICE_SIZE ?? "10");
 }

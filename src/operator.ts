@@ -6,13 +6,15 @@ import readline from "readline";
 import { MessageSubtype, MessageType } from "./enums";
 import { isCommand, getCommand, getArgs, logCommonCommands } from "./commands";
 import { setupDisconnectHandlers } from "./disconnectHandlers";
+import { Config } from "./config";
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const ws = new WebSocket(`ws://localhost:${process.env.PORT}`);
+console.info(`Connecting to ${Config.SERVER}:${Config.PORT}`);
+const ws = new WebSocket(`ws://${Config.SERVER}:${Config.PORT}`);
 setupDisconnectHandlers(ws, rl);
 
 function authenticateOperator() {
