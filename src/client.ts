@@ -13,7 +13,10 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const ws = new WebSocket(`ws://${Config.SERVER}:${Config.PORT}`);
+const url = `ws://${Config.SERVER}:${Config.PORT}`
+console.info(`Connecting to ${url}`);
+
+const ws = new WebSocket(url);
 setupDisconnectHandlers(ws, rl);
 
 function messagePrompt() {

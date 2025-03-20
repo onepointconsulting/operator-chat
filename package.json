@@ -1,6 +1,6 @@
 {
   "name": "@gilf/chat-websocket-server",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -9,6 +9,8 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/examples/simpleChat.ts",
+    "start-file-save": "ts-node src/examples/fileSaveChat.ts",
+    "start-wiki": "ts-node src/examples/wikiChat.ts",
     "build": "tsc",
     "start:prod": "node dist/server.js",
     "client": "ts-node src/client.ts",

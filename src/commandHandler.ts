@@ -5,6 +5,7 @@ import { MessageSubtype, MessageType } from "./enums";
 import { Config } from "./config";
 import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
+import { ClientCallback } from "./callback";
 
 /**
  * Handles the connection between an operator and a user.
@@ -241,6 +242,10 @@ export async function handleCallbacks(client: Client) {
   // Execute callbacks sequentially
   for (const callback of activeCallbacks) {
     const promise = callback.callback;
-    client.chatHistory = await promise(client.chatHistory);
+    if (callback instanceof ClientCallback) {
+      await promise(client);
+    } else {
+      client.chatHistory = await promise(client.chatHistory);
+    }
   }
 }
