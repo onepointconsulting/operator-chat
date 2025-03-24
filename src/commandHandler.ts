@@ -1,25 +1,25 @@
 import { WebSocket } from "ws";
-import { Client, ChatMessage } from "./types";
+import { Conversation, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType } from "./enums";
 import { Config } from "./config";
 import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
-import { ClientCallback } from "./callback";
+import { ConversationCallback } from "./callback";
 
 /**
  * Handles the connection between an operator and a user.
- * @param client - The operator client.
+ * @param conversation - The operator conversation.
  * @param targetId - The ID of the user to connect to.
- * @param clients - The map of all clients.
+ * @param conversations - The map of all conversation.
  */
 export function handleOperatorConnection(
-  client: Client,
+  conversation: Conversation,
   targetId: string,
-  clients: Map<string, Client>,
+  conversations: Map<string, Conversation>,
 ) {
-  if (client.connectedTo) {
-    client.ws.send(
+  if (conversation.connectedTo) {
+    conversation.ws.send(
       JSON.stringify({
         type: MessageType.ERROR,
         message: "You are already connected to a user.",
@@ -28,24 +28,24 @@ export function handleOperatorConnection(
     return;
   }
 
-  const targetClient = clients.get(targetId);
-  if (!targetClient) {
-    client.ws.send(
+  const targetConversation = conversations.get(targetId);
+  if (!targetConversation) {
+    conversation.ws.send(
       JSON.stringify({ type: MessageType.ERROR, message: "User not found." }),
     );
     return;
   }
 
-  if (!targetClient.connectedTo) {
-    client.connectedTo = targetClient.id;
-    targetClient.connectedTo = client.id;
-    client.ws.send(
+  if (!targetConversation.connectedTo) {
+    conversation.connectedTo = targetConversation.id;
+    targetConversation.connectedTo = conversation.id;
+    conversation.ws.send(
       JSON.stringify({
         type: MessageType.CONNECTED,
-        targetId: targetClient.id,
+        targetId: targetConversation.id,
       }),
     );
-    targetClient.ws.send(
+    targetConversation.ws.send(
       JSON.stringify({
         type: MessageType.MESSAGE,
         subType: MessageSubtype.OPERATOR_CONNECTED,
@@ -56,13 +56,13 @@ export function handleOperatorConnection(
 
 /**
  * Handles operator authentication.
- * @param client - The client attempting to authenticate.
- * @param password - The password provided by the client.
+ * @param conversation - The conversation attempting to authenticate.
+ * @param password - The password provided in the conversations.
  * @returns The authentication response message.
  */
-export function handleOperatorAuth(client: Client, password: string) {
+export function handleOperatorAuth(conversation: Conversation, password: string) {
   const correctPassword = password === Config.OPERATOR_PASSWORD;
-  client.isOperator = correctPassword;
+  conversation.isOperator = correctPassword;
   return JSON.stringify({
     type: MessageType.LOGIN_RESPONSE,
     success: correctPassword,
@@ -70,41 +70,41 @@ export function handleOperatorAuth(client: Client, password: string) {
 }
 
 /**
- * Handles incoming chat messages from clients.
- * @param client - The client sending the message.
+ * Handles incoming chat messages from conversation.
+ * @param conservation - The conversation from which the message was sent.
  * @param content - The message content.
- * @param clients - Map of all connected clients.
+ * @param conversations - Map of all connected conversation.
  * @param llmService - The LLM service instance.
  */
 export async function handleChatMessage(
-  client: Client,
+  conservation: Conversation,
   content: string,
-  clients: Map<string, Client>,
+  conversations: Map<string, Conversation>,
   llmService: LLMService,
 ) {
   const chatMessage: ChatMessage = {
-    role: client.isOperator ? "operator" : "user",
+    role: conservation.isOperator ? "operator" : "user",
     content,
   };
 
-  client.chatHistory.push(chatMessage);
+  conservation.chatHistory.push(chatMessage);
 
-  sliceHistory(client);
+  sliceHistory(conservation);
   // Execute all applicable callbacks
-  await handleCallbacks(client);
+  await handleCallbacks(conservation);
 
-  if (client.connectedTo) {
-    const target = clients.get(client.connectedTo);
+  if (conservation.connectedTo) {
+    const target = conversations.get(conservation.connectedTo);
     if (target) {
       target.chatHistory.push(chatMessage);
       target.ws.send(
         JSON.stringify({
           type: MessageType.MESSAGE,
           message: chatMessage,
-          clientId: client.id,
+          conversationId: conservation.id,
         }),
       );
-      client.ws.send(
+      conservation.ws.send(
         JSON.stringify({
           type: MessageType.MESSAGE_SENT,
         }),
@@ -112,8 +112,8 @@ export async function handleChatMessage(
     }
   } else {
     // The user is not connected to any operator.
-    if (client.isOperator) {
-      client.ws.send(
+    if (conservation.isOperator) {
+      conservation.ws.send(
         JSON.stringify({
           type: MessageType.ERROR,
           message: "You are not connected to any user.",
@@ -121,8 +121,8 @@ export async function handleChatMessage(
       );
     } else {
       // The user is not an operator.
-      if (!askPredefinedQuestion(client.ws, client)) {
-        await llmService.handleLLMResponse(client, client.chatHistory);
+      if (!askPredefinedQuestion(conservation.ws, conservation)) {
+        await llmService.handleLLMResponse(conservation, conservation.chatHistory);
       }
     }
   }
@@ -131,13 +131,13 @@ export async function handleChatMessage(
 /**
  * Handles the request to list all connected users.
  * @param ws - The WebSocket connection to send the response to.
- * @param clients - Map of all connected clients.
+ * @param conversations - Map of all connected conversations.
  */
-export function handleListUsers(ws: WebSocket, clients: Map<string, Client>) {
+export function handleListUsers(ws: WebSocket, conversations: Map<string, Conversation>) {
   ws.send(
     JSON.stringify({
       type: MessageType.USERS_LIST,
-      users: Array.from(clients.values()).filter((c) => !c.isOperator),
+      users: Array.from(conversations.values()).filter((c) => !c.isOperator),
     }),
   );
 }
@@ -145,31 +145,31 @@ export function handleListUsers(ws: WebSocket, clients: Map<string, Client>) {
 /**
  * Handles the request to list all connected operators.
  * @param ws - The WebSocket connection to send the response to.
- * @param clients - Map of all connected clients.
+ * @param conversations - Map of all connected conversations.
  */
 export function handleListOperators(
   ws: WebSocket,
-  clients: Map<string, Client>,
+  conversations: Map<string, Conversation>,
 ) {
   ws.send(
     JSON.stringify({
       type: MessageType.LIST_OPERATORS,
-      operators: Array.from(clients.values()).filter((c) => c.isOperator),
+      operators: Array.from(conversations.values()).filter((c) => c.isOperator),
     }),
   );
 }
 
 /**
- * Handles client disconnection.
- * @param client - The client disconnecting.
- * @param clients - Map of all connected clients.
+ * Handles conversation disconnection.
+ * @param conversation - The conversation disconnecting.
+ * @param conversations - Map of all connected conversations.
  */
-export function handleDisconnect(client: Client, clients: Map<string, Client>) {
-  if (client.connectedTo) {
-    const target = clients.get(client.connectedTo);
+export function handleDisconnect(conversation: Conversation, conversations: Map<string, Conversation>) {
+  if (conversation.connectedTo) {
+    const target = conversations.get(conversation.connectedTo);
     if (target) {
       target.connectedTo = undefined;
-      const targets = [target, client];
+      const targets = [target, conversation];
       for (const target of targets) {
         target.ws.send(
           JSON.stringify({
@@ -184,32 +184,32 @@ export function handleDisconnect(client: Client, clients: Map<string, Client>) {
 }
 
 /**
- * Handles setting a client's name.
- * @param client - The client to set the name for.
+ * Handles setting a conversation's name.
+ * @param conversation - The conversation to set the name for.
  * @param name - The name to set.
  */
-export function handleSetName(client: Client, name: string) {
-  client.name = name;
+export function handleSetName(conversation: Conversation, name: string) {
+  conversation.name = name;
   return JSON.stringify({
     type: MessageType.SET_NAME,
-    clientId: client.id,
-    name: client.name,
+    conversationId: conversation.id,
+    name: conversation.name,
   });
 }
 
 /**
  * Asks a predefined question to the user.
  * @param ws - The WebSocket connection to send the response to.
- * @param clients - Map of all connected clients.
+ * @param conversations - Map of all connected conversations.
  */
-export function askPredefinedQuestion(ws: WebSocket, client: Client): boolean {
-  const questions = client.predefinedQuestions;
+export function askPredefinedQuestion(ws: WebSocket, conversations: Conversation): boolean {
+  const questions = conversations.predefinedQuestions;
   if (!questions || questions.length === 0) {
     return false;
   }
   const question = questions[0];
-  client.predefinedQuestions = questions.slice(1);
-  client.chatHistory.push({
+  conversations.predefinedQuestions = questions.slice(1);
+  conversations.chatHistory.push({
     role: "system",
     content: question,
   });
@@ -226,14 +226,14 @@ export function askPredefinedQuestion(ws: WebSocket, client: Client): boolean {
 }
 
 /**
- * Executes all applicable callbacks for a client
- * @param client - The client to execute callbacks for
+ * Executes all applicable callbacks for a conversation
+ * @param conversation - The conversation to execute callbacks for
  * @returns The updated chat history after all callbacks have been executed
  */
-export async function handleCallbacks(client: Client) {
+export async function handleCallbacks(conversation: Conversation) {
   // Filter callbacks that should be executed
   const activeCallbacks = globalCallbacks.filter((callback) => {
-    if (!callback.isOperator && client.connectedTo) {
+    if (!callback.isOperator && conversation.connectedTo) {
       return false;
     }
     return true;
@@ -242,10 +242,19 @@ export async function handleCallbacks(client: Client) {
   // Execute callbacks sequentially
   for (const callback of activeCallbacks) {
     const promise = callback.callback;
-    if (callback instanceof ClientCallback) {
-      await promise(client);
+    if (callback instanceof ConversationCallback) {
+      await promise(conversation);
     } else {
-      client.chatHistory = await promise(client.chatHistory);
+      conversation.chatHistory = await promise(conversation.chatHistory);
     }
   }
+}
+
+export function handleConversationId(ws: WebSocket, conversationId: string) {
+  ws.send(
+    JSON.stringify({
+      type: MessageType.CONVERSATION_ID,
+      conversationId: conversationId,
+    }),
+  );
 }

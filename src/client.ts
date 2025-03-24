@@ -13,7 +13,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const url = `ws://${Config.SERVER}:${Config.PORT}`
+const url = `ws://${Config.SERVER}:${Config.PORT}`;
 console.info(`Connecting to ${url}`);
 
 const ws = new WebSocket(url);
@@ -69,7 +69,6 @@ function askMessage(input: string) {
 ws.on("open", () => {
   console.log("Connected to server");
   showCommands();
-  messagePrompt();
 });
 
 ws.on("message", (data) => {
@@ -127,6 +126,11 @@ ws.on("message", (data) => {
       messagePrompt();
       break;
 
+    case MessageType.CONVERSATION_ID:
+      console.log(`Conversation ID: ${message.conversationId}`);
+      messagePrompt();
+      break;
+
     case MessageType.ERROR:
       console.error("Error:", message.message);
       messagePrompt();
@@ -138,7 +142,7 @@ function showCommands() {
   console.log("\nCommands:");
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
   console.log(`/${MessageType.CONNECT} <userId> - Connect to an operator`);
-  console.log(`/${MessageType.DISCONNECT} - List available operators`);
+  console.log(`/${MessageType.DISCONNECT} - Disconnect from the current operator`);
   console.log(`/${Command.HELP} - Show the help menu`);
   logCommonCommands();
   console.log("Any other input will be sent as a message\n");

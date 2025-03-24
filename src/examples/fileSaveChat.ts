@@ -1,7 +1,5 @@
 import { initChatServer } from "../main";
-import { ClientCallback } from "../callback";
+import { ConversationCallback } from "../callback";
 import { fileSaver } from "../callbacks/fileSaver";
 
-
-initChatServer([new ClientCallback("fileSaveChat", fileSaver)]);
-
+initChatServer([new ConversationCallback("fileSaveChat", fileSaver)]);

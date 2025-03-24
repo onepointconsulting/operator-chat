@@ -47,7 +47,7 @@ ws.on("message", (data) => {
       break;
 
     case MessageType.MESSAGE:
-      const { clientId, subType } = message;
+      const { conversationId, subType } = message;
       if (subType) {
         switch (subType) {
           case MessageSubtype.OPERATOR_DISCONNECTED:
@@ -55,7 +55,7 @@ ws.on("message", (data) => {
             break;
         }
       } else {
-        console.log(`\n${clientId}: `, message.message?.content);
+        console.log(`\n${conversationId}: `, message.message?.content);
       }
       break;
 
@@ -72,7 +72,7 @@ ws.on("message", (data) => {
       break;
 
     case MessageType.SET_NAME:
-      console.log(`${message.clientId} is now known as ${message.name}`);
+      console.log(`${message.conversationId} is now known as ${message.name}`);
       break;
 
     case MessageType.USERS_LIST:

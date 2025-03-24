@@ -2,7 +2,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMessage, LLMProvider } from "./types";
 import { MessageSubtype, MessageType, SupportedLLMProvider } from "./enums";
-import { Client } from "./types";
+import { Conversation } from "./types";
 import { Config } from "./config";
 
 function convertMessage(role: string, provider: LLMProvider) {
@@ -96,7 +96,7 @@ export class LLMService {
     }
   }
 
-  async handleLLMResponse(client: Client, messages: ChatMessage[]) {
+  async handleLLMResponse(client: Conversation, messages: ChatMessage[]) {
     try {
       client.ws.send(
         JSON.stringify({

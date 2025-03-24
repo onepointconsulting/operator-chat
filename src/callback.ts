@@ -1,4 +1,4 @@
-import { ChatMessage, Client } from "./types";
+import { ChatMessage, Conversation } from "./types";
 
 export abstract class BaseChatCallback {
   constructor(
@@ -17,13 +17,15 @@ export abstract class BaseChatCallback {
     return this._isOperator;
   }
 
-  abstract get callback(): (obj: any) => Promise<any>
+  abstract get callback(): (obj: any) => Promise<any>;
 }
 
 export class ChatCallback extends BaseChatCallback {
   constructor(
     protected readonly _id: string,
-    private readonly _callback: (chatHistory: ChatMessage[]) => Promise<ChatMessage[]>,
+    private readonly _callback: (
+      chatHistory: ChatMessage[],
+    ) => Promise<ChatMessage[]>,
     protected readonly _isOperator: boolean = false,
   ) {
     super(_id, _isOperator);
@@ -35,17 +37,17 @@ export class ChatCallback extends BaseChatCallback {
   }
 }
 
-export class ClientCallback extends BaseChatCallback {
+export class ConversationCallback extends BaseChatCallback {
   constructor(
     protected readonly _id: string,
-    private readonly _callback: (client: Client) => Promise<any>,
+    private readonly _callback: (conversation: Conversation) => Promise<any>,
     protected readonly _isOperator: boolean = false,
   ) {
     super(_id, _isOperator);
     this._callback = _callback;
   }
 
-  get callback(): (client: Client) => Promise<void> {
+  get callback(): (conversation: Conversation) => Promise<void> {
     return this._callback;
   }
 }

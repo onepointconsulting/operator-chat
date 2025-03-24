@@ -6,7 +6,7 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface Client {
+export interface Conversation {
   id: string;
   ws: WebSocket;
   chatHistory: ChatMessage[];
