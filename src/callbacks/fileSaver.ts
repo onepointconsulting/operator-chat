@@ -7,8 +7,8 @@ const FILE_PATH = path.join(
   `./chatHistory_${new Date().toISOString().replace(/[:Z]/g, "")}.json`,
 );
 
-export async function fileSaver(client: Conversation): Promise<void> {
-  const { id, chatHistory } = client;
+export async function fileSaver(conversation: Conversation): Promise<void> {
+  const { id, chatHistory } = conversation;
   const message = { id, chatHistory, timestamp: new Date().toISOString() };
   // Append to the file
   fs.appendFileSync(FILE_PATH, JSON.stringify(message) + "\n");

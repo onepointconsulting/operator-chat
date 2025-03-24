@@ -6,7 +6,7 @@ export const mockChatMessage: ChatMessage = {
   content: "Hello, how are you?",
 };
 
-export const mockClient = {
+export const mockConversation = {
   id: "test-id",
   ws: {
     send: jest.fn(),

@@ -8,16 +8,17 @@ const initialHistoryEntries = initialQuestions.length * 2 + 1;
 /**
  * Slices the chat history to the last sliceSize messages specified in the config.
  * Preserves the initial history entries from predefined questions.
- * @param client - The client to slice the history for
+ * @param conversation - The conversation to slice the history for
  */
-export function sliceHistory(client: Conversation) {
-  const history = client.chatHistory;
+export function sliceHistory(conversation: Conversation) {
+  const history = conversation.chatHistory;
   if (history.length <= initialHistoryEntries + maxHistorySize) {
-    return;
+    return conversation.chatHistory;
   }
-  const initialHistory = client.isOperator
+  const initialHistory = conversation.isOperator
     ? []
     : history.slice(0, initialHistoryEntries);
   const slicedHistory = history.slice(-maxHistorySize);
-  client.chatHistory = [...initialHistory, ...slicedHistory];
+  conversation.chatHistory = [...initialHistory, ...slicedHistory];
+  return conversation.chatHistory;
 }

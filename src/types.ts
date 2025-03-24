@@ -14,6 +14,7 @@ export interface Conversation {
   connectedTo?: string;
   name?: string;
   predefinedQuestions?: string[];
+  clientId?: string;
 }
 
 export type LLMProvider =

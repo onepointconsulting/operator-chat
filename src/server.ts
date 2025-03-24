@@ -14,6 +14,7 @@ import {
   handleSetName,
   askPredefinedQuestion,
   handleConversationId,
+  handleClientId as handleRequestClientId,
 } from "./commandHandler";
 import http from "http";
 
@@ -38,7 +39,7 @@ export const server = http.createServer((req, res) => {
 
 // Create WebSocket server attached to HTTP server
 export const wss = new WebSocketServer({ noServer: true });
-const clients = new Map<string, Conversation>();
+const conversations = new Map<string, Conversation>();
 const llmService = new LLMService();
 
 const BASIC_SYSTEM_MESSAGE = (readPrompts().basic as any).system_message;
@@ -62,19 +63,19 @@ server.on("upgrade", (request, socket, head) => {
 });
 
 wss.on("connection", (ws: WebSocket) => {
-  const clientId = uuidv7(); // Conversation id
-  const client: Conversation = {
-    id: clientId,
+  const conversationId = uuidv7(); // Conversation id
+  const conversation: Conversation = {
+    id: conversationId,
     ws,
     chatHistory: [{ role: "system", content: BASIC_SYSTEM_MESSAGE }],
     isOperator: false,
     predefinedQuestions: getInitialQuestions(),
   };
-  clients.set(clientId, client);
-  console.info(`Client ${clientId} connected`);
+  conversations.set(conversationId, conversation);
+  console.info(`Conversation ${conversationId} started`);
 
-  handleConversationId(ws, clientId);
-  askPredefinedQuestion(ws, client);
+  handleConversationId(ws, conversationId);
+  askPredefinedQuestion(ws, conversation);
 
   ws.on("message", async (message: string) => {
     console.log(`Received message: ${message}`);
@@ -82,35 +83,39 @@ wss.on("connection", (ws: WebSocket) => {
 
     switch (data.type) {
       case MessageType.AUTH:
-        ws.send(handleOperatorAuth(client, data.password));
+        ws.send(handleOperatorAuth(conversation, data.password));
         break;
 
       case MessageType.CONNECT:
-        handleOperatorConnection(client, data.targetId, clients);
+        handleOperatorConnection(conversation, data.targetId, conversations);
         break;
 
       case MessageType.LIST_USERS:
-        handleListUsers(ws, clients);
+        handleListUsers(ws, conversations);
         break;
 
       case MessageType.LIST_OPERATORS:
-        handleListOperators(ws, clients);
+        handleListOperators(ws, conversations);
         break;
 
       case MessageType.MESSAGE:
-        await handleChatMessage(client, data.content, clients, llmService);
+        await handleChatMessage(conversation, data, conversations, llmService);
         break;
 
       case MessageType.SET_NAME:
-        ws.send(handleSetName(client, data.name));
+        ws.send(handleSetName(conversation, data.name));
         break;
 
       case MessageType.DISCONNECT:
-        handleDisconnect(client, clients);
+        handleDisconnect(conversation, conversations);
+        break;
+
+      case MessageType.REQUEST_CLIENT_ID:
+        handleRequestClientId(ws, conversation.id);
         break;
 
       default:
-        client.ws.send(
+        conversation.ws.send(
           JSON.stringify({
             type: MessageType.ERROR,
             message: "Invalid command.",
@@ -120,8 +125,8 @@ wss.on("connection", (ws: WebSocket) => {
   });
 
   ws.on("close", () => {
-    if (client.connectedTo) {
-      const target = clients.get(client.connectedTo);
+    if (conversation.connectedTo) {
+      const target = conversations.get(conversation.connectedTo);
       if (target) {
         target.connectedTo = undefined;
         target.ws.send(
@@ -132,6 +137,6 @@ wss.on("connection", (ws: WebSocket) => {
         );
       }
     }
-    clients.delete(clientId);
+    conversations.delete(conversationId);
   });
 });

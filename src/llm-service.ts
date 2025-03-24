@@ -96,9 +96,9 @@ export class LLMService {
     }
   }
 
-  async handleLLMResponse(client: Conversation, messages: ChatMessage[]) {
+  async handleLLMResponse(conversation: Conversation, messages: ChatMessage[]) {
     try {
-      client.ws.send(
+      conversation.ws.send(
         JSON.stringify({
           type: MessageType.STREAM_START,
           message: { role: "assistant", content: "" },
@@ -108,7 +108,7 @@ export class LLMService {
       let fullResponse = "";
       for await (const chunk of this.generateResponseStream(messages)) {
         fullResponse += chunk;
-        client.ws.send(
+        conversation.ws.send(
           JSON.stringify({
             type: MessageType.STREAM_CHUNK,
             chunk,
@@ -120,9 +120,9 @@ export class LLMService {
         role: "assistant",
         content: fullResponse,
       };
-      client.chatHistory.push(aiMessage);
+      conversation.chatHistory.push(aiMessage);
 
-      client.ws.send(
+      conversation.ws.send(
         JSON.stringify({
           type: MessageType.STREAM_END,
           message: aiMessage,
@@ -130,7 +130,7 @@ export class LLMService {
       );
     } catch (error) {
       console.error("Error in streaming response:", error);
-      client.ws.send(
+      conversation.ws.send(
         JSON.stringify({
           type: MessageType.STREAM_END,
           subType: MessageSubtype.STREAM_END_ERROR,

@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import fs from "fs";
+
 dotenv.config();
 
 import WebSocket from "ws";
@@ -21,6 +23,13 @@ setupDisconnectHandlers(ws, rl);
 
 function messagePrompt() {
   rl.question('Enter message (or "/quit" to exit): ', askMessage);
+}
+
+let clientId = "";
+
+// Read client ID from file clientId.txt
+if (fs.existsSync("clientId.txt")) {
+  clientId = fs.readFileSync("clientId.txt", "utf8");
 }
 
 function askMessage(input: string) {
@@ -46,6 +55,10 @@ function askMessage(input: string) {
         ws.send(JSON.stringify({ type: MessageType.DISCONNECT }));
         break;
 
+      case MessageType.REQUEST_CLIENT_ID:
+        ws.send(JSON.stringify({ type: MessageType.REQUEST_CLIENT_ID }));
+        break;
+
       case MessageType.CONNECT:
         ws.send(
           JSON.stringify({ type: MessageType.CONNECT, targetId: args[0] }),
@@ -62,7 +75,7 @@ function askMessage(input: string) {
         messagePrompt();
     }
   } else {
-    ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input }));
+    ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input, clientId }));
   }
 }
 
@@ -131,6 +144,12 @@ ws.on("message", (data) => {
       messagePrompt();
       break;
 
+    case MessageType.CLIENT_ID:
+      clientId = message.clientId;
+      fs.writeFileSync("clientId.txt", message.clientId);
+      messagePrompt();
+      break;
+
     case MessageType.ERROR:
       console.error("Error:", message.message);
       messagePrompt();
@@ -143,6 +162,7 @@ function showCommands() {
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
   console.log(`/${MessageType.CONNECT} <userId> - Connect to an operator`);
   console.log(`/${MessageType.DISCONNECT} - Disconnect from the current operator`);
+  console.log(`/${MessageType.REQUEST_CLIENT_ID} - Request a client ID`);
   console.log(`/${Command.HELP} - Show the help menu`);
   logCommonCommands();
   console.log("Any other input will be sent as a message\n");

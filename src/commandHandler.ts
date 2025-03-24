@@ -6,6 +6,7 @@ import { Config } from "./config";
 import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
 import { ConversationCallback } from "./callback";
+import { uuidv7 } from 'uuidv7'
 
 /**
  * Handles the connection between an operator and a user.
@@ -71,40 +72,41 @@ export function handleOperatorAuth(conversation: Conversation, password: string)
 
 /**
  * Handles incoming chat messages from conversation.
- * @param conservation - The conversation from which the message was sent.
+ * @param conversation - The conversation from which the message was sent.
  * @param content - The message content.
  * @param conversations - Map of all connected conversation.
  * @param llmService - The LLM service instance.
  */
 export async function handleChatMessage(
-  conservation: Conversation,
-  content: string,
+  conversation: Conversation,
+  data: { content: string, clientId: string },
   conversations: Map<string, Conversation>,
   llmService: LLMService,
 ) {
   const chatMessage: ChatMessage = {
-    role: conservation.isOperator ? "operator" : "user",
-    content,
+    role: conversation.isOperator ? "operator" : "user",
+    content: data.content,
   };
 
-  conservation.chatHistory.push(chatMessage);
+  conversation.chatHistory.push(chatMessage);
+  conversation.clientId = data.clientId;
 
-  sliceHistory(conservation);
+  sliceHistory(conversation);
   // Execute all applicable callbacks
-  await handleCallbacks(conservation);
+  await handleCallbacks(conversation);
 
-  if (conservation.connectedTo) {
-    const target = conversations.get(conservation.connectedTo);
+  if (conversation.connectedTo) {
+    const target = conversations.get(conversation.connectedTo);
     if (target) {
       target.chatHistory.push(chatMessage);
       target.ws.send(
         JSON.stringify({
           type: MessageType.MESSAGE,
           message: chatMessage,
-          conversationId: conservation.id,
+          conversationId: conversation.id,
         }),
       );
-      conservation.ws.send(
+      conversation.ws.send(
         JSON.stringify({
           type: MessageType.MESSAGE_SENT,
         }),
@@ -112,8 +114,8 @@ export async function handleChatMessage(
     }
   } else {
     // The user is not connected to any operator.
-    if (conservation.isOperator) {
-      conservation.ws.send(
+    if (conversation.isOperator) {
+      conversation.ws.send(
         JSON.stringify({
           type: MessageType.ERROR,
           message: "You are not connected to any user.",
@@ -121,8 +123,8 @@ export async function handleChatMessage(
       );
     } else {
       // The user is not an operator.
-      if (!askPredefinedQuestion(conservation.ws, conservation)) {
-        await llmService.handleLLMResponse(conservation, conservation.chatHistory);
+      if (!askPredefinedQuestion(conversation.ws, conversation)) {
+        await llmService.handleLLMResponse(conversation, conversation.chatHistory);
       }
     }
   }
@@ -255,6 +257,16 @@ export function handleConversationId(ws: WebSocket, conversationId: string) {
     JSON.stringify({
       type: MessageType.CONVERSATION_ID,
       conversationId: conversationId,
+    }),
+  );
+}
+
+export function handleClientId(ws: WebSocket, conversationId: string) {
+  ws.send(
+    JSON.stringify({
+      type: MessageType.CLIENT_ID,
+      clientId: uuidv7(),
+      conversationId
     }),
   );
 }

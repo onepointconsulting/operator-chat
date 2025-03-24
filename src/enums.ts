@@ -16,6 +16,7 @@ export enum MessageType {
   LIST_OPERATORS = "list-operators",
   SET_NAME = "set-name",
   CONVERSATION_ID = "conversation-id",
+  REQUEST_CLIENT_ID = "request-client-id",
   CLIENT_ID = "client-id",
 }
 

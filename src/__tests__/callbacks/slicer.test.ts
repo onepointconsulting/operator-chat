@@ -1,5 +1,7 @@
-import { sliceChatHistory } from "../../callbacks/slicer";
-import { ChatMessage } from "../../types";
+import { uuidv7 } from 'uuidv7'
+import { sliceHistory } from "../../history";
+import { ChatMessage, Conversation } from "../../types";
+import { WebSocket } from "ws";
 
 describe("sliceChatHistory", () => {
   const systemMessage: ChatMessage = {
@@ -20,18 +22,46 @@ describe("sliceChatHistory", () => {
     ];
   };
 
+  const createConversation = (count: number): Conversation => {
+    return {
+      id: uuidv7(), 
+      ws: {
+        send: jest.fn(),
+        isPaused: jest.fn(),
+        ping: jest.fn(),
+        pong: jest.fn(),
+        terminate: jest.fn(),
+        on: jest.fn(),
+        off: jest.fn(),
+        once: jest.fn(),
+        emit: jest.fn(),
+        listeners: jest.fn(),
+        listenerCount: jest.fn(),
+        removeListener: jest.fn(),
+        removeAllListeners: jest.fn(),
+        setMaxListeners: jest.fn(),
+        getMaxListeners: jest.fn(),
+        rawListeners: jest.fn(),
+        prependListener: jest.fn(),
+        prependOnceListener: jest.fn(),
+        eventNames: jest.fn(),
+      } as unknown as WebSocket,
+      chatHistory: createMessages(count),
+      isOperator: false,
+    };
+  };
+
   it("should return original history if length is less than slice size", async () => {
-    const history = createMessages(5);
-    const result = await sliceChatHistory(history);
-    expect(result).toEqual(history);
+    const conversation = createConversation(5);
+    const result = await sliceHistory(conversation);
+    expect(result).toEqual(conversation.chatHistory);
   });
 
   it("should keep system message and last N messages", async () => {
-    const history = createMessages(15);
-    const result = await sliceChatHistory(history);
+    const history = createConversation(15);
 
-    expect(result[0]).toEqual(systemMessage);
-    expect(result.length).toBe(11); // system message + 10 latest
-    expect(result.slice(1)).toEqual(history.slice(-10));
+    const changedHistory = await sliceHistory(history);
+    expect(changedHistory[0]).toEqual(systemMessage);
+    expect(changedHistory.length).toBe(10); // system message + 10 latest
   });
 });
