@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { Conversation, ChatMessage } from "./types";
 import { LLMService } from "./llm-service";
-import { MessageSubtype, MessageType } from "./enums";
+import { MessageSubtype, MessageType, Role } from "./enums";
 import { Config } from "./config";
 import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
@@ -84,7 +84,7 @@ export async function handleChatMessage(
   llmService: LLMService,
 ) {
   const chatMessage: ChatMessage = {
-    role: conversation.isOperator ? "operator" : "user",
+    role: conversation.isOperator ? Role.OPERATOR : Role.USER,
     content: data.content,
   };
 
@@ -212,14 +212,14 @@ export function askPredefinedQuestion(ws: WebSocket, conversations: Conversation
   const question = questions[0];
   conversations.predefinedQuestions = questions.slice(1);
   conversations.chatHistory.push({
-    role: "system",
+    role: Role.ASSISTANT,
     content: question,
   });
   ws.send(
     JSON.stringify({
       type: MessageType.MESSAGE,
       message: {
-        role: "system",
+        role: Role.ASSISTANT,
         content: question,
       },
     }),

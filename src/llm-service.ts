@@ -1,7 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMessage, LLMProvider } from "./types";
-import { MessageSubtype, MessageType, SupportedLLMProvider } from "./enums";
+import { MessageSubtype, MessageType, SupportedLLMProvider, Role } from "./enums";
 import { Conversation } from "./types";
 import { Config } from "./config";
 
@@ -101,7 +101,7 @@ export class LLMService {
       conversation.ws.send(
         JSON.stringify({
           type: MessageType.STREAM_START,
-          message: { role: "assistant", content: "" },
+          message: { role: Role.ASSISTANT, content: "" },
         }),
       );
 
@@ -117,7 +117,7 @@ export class LLMService {
       }
 
       const aiMessage: ChatMessage = {
-        role: "assistant",
+        role: Role.ASSISTANT,
         content: fullResponse,
       };
       conversation.chatHistory.push(aiMessage);

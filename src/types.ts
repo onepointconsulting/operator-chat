@@ -1,8 +1,8 @@
 import { WebSocket } from "ws";
-import { SupportedLLMProvider } from "./enums";
+import { SupportedLLMProvider, Role } from "./enums";
 
 export interface ChatMessage {
-  role: "user" | "assistant" | "operator" | "system";
+  role: Role;
   content: string;
 }
 

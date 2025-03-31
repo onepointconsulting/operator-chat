@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { uuidv7 } from 'uuidv7'
 import { Conversation } from "./types";
 import { LLMService } from "./llm-service";
-import { MessageSubtype, MessageType } from "./enums";
+import { MessageSubtype, MessageType, Role } from "./enums";
 import { getInitialQuestions, readPrompts } from "./prompts";
 import {
   handleOperatorConnection,
@@ -67,7 +67,7 @@ wss.on("connection", (ws: WebSocket) => {
   const conversation: Conversation = {
     id: conversationId,
     ws,
-    chatHistory: [{ role: "system", content: BASIC_SYSTEM_MESSAGE }],
+    chatHistory: [{ role: Role.SYSTEM, content: BASIC_SYSTEM_MESSAGE }],
     isOperator: false,
     predefinedQuestions: getInitialQuestions(),
   };

@@ -34,3 +34,10 @@ export enum SupportedLLMProvider {
   OPENAI = "openai",
   GEMINI = "gemini",
 }
+
+export enum Role {
+  USER = "user",
+  ASSISTANT = "assistant",
+  SYSTEM = "system",
+  OPERATOR = "operator",
+}
