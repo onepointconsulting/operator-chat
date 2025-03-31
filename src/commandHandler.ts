@@ -6,7 +6,7 @@ import { Config } from "./config";
 import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
 import { ConversationCallback } from "./callback";
-import { uuidv7 } from 'uuidv7'
+import { uuidv7 } from "uuidv7";
 
 /**
  * Handles the connection between an operator and a user.
@@ -61,7 +61,10 @@ export function handleOperatorConnection(
  * @param password - The password provided in the conversations.
  * @returns The authentication response message.
  */
-export function handleOperatorAuth(conversation: Conversation, password: string) {
+export function handleOperatorAuth(
+  conversation: Conversation,
+  password: string,
+) {
   const correctPassword = password === Config.OPERATOR_PASSWORD;
   conversation.isOperator = correctPassword;
   return JSON.stringify({
@@ -79,7 +82,7 @@ export function handleOperatorAuth(conversation: Conversation, password: string)
  */
 export async function handleChatMessage(
   conversation: Conversation,
-  data: { content: string, clientId: string },
+  data: { content: string; clientId: string },
   conversations: Map<string, Conversation>,
   llmService: LLMService,
 ) {
@@ -92,8 +95,6 @@ export async function handleChatMessage(
   conversation.clientId = data.clientId;
 
   sliceHistory(conversation);
-  // Execute all applicable callbacks
-  await handleCallbacks(conversation);
 
   if (conversation.connectedTo) {
     const target = conversations.get(conversation.connectedTo);
@@ -124,10 +125,15 @@ export async function handleChatMessage(
     } else {
       // The user is not an operator.
       if (!askPredefinedQuestion(conversation.ws, conversation)) {
-        await llmService.handleLLMResponse(conversation, conversation.chatHistory);
+        await llmService.handleLLMResponse(
+          conversation,
+          conversation.chatHistory,
+        );
       }
     }
   }
+  // Execute all applicable callbacks
+  await handleCallbacks(conversation);
 }
 
 /**
@@ -135,7 +141,10 @@ export async function handleChatMessage(
  * @param ws - The WebSocket connection to send the response to.
  * @param conversations - Map of all connected conversations.
  */
-export function handleListUsers(ws: WebSocket, conversations: Map<string, Conversation>) {
+export function handleListUsers(
+  ws: WebSocket,
+  conversations: Map<string, Conversation>,
+) {
   ws.send(
     JSON.stringify({
       type: MessageType.USERS_LIST,
@@ -166,7 +175,10 @@ export function handleListOperators(
  * @param conversation - The conversation disconnecting.
  * @param conversations - Map of all connected conversations.
  */
-export function handleDisconnect(conversation: Conversation, conversations: Map<string, Conversation>) {
+export function handleDisconnect(
+  conversation: Conversation,
+  conversations: Map<string, Conversation>,
+) {
   if (conversation.connectedTo) {
     const target = conversations.get(conversation.connectedTo);
     if (target) {
@@ -204,7 +216,10 @@ export function handleSetName(conversation: Conversation, name: string) {
  * @param ws - The WebSocket connection to send the response to.
  * @param conversations - Map of all connected conversations.
  */
-export function askPredefinedQuestion(ws: WebSocket, conversations: Conversation): boolean {
+export function askPredefinedQuestion(
+  ws: WebSocket,
+  conversations: Conversation,
+): boolean {
   const questions = conversations.predefinedQuestions;
   if (!questions || questions.length === 0) {
     return false;
@@ -266,7 +281,7 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
     JSON.stringify({
       type: MessageType.CLIENT_ID,
       clientId: uuidv7(),
-      conversationId
+      conversationId,
     }),
   );
 }

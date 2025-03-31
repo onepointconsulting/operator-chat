@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { uuidv7 } from 'uuidv7'
+import { uuidv7 } from "uuidv7";
 import { Conversation } from "./types";
 import { LLMService } from "./llm-service";
 import { MessageSubtype, MessageType, Role } from "./enums";

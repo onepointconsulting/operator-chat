@@ -1,4 +1,4 @@
-import { uuidv7 } from 'uuidv7'
+import { uuidv7 } from "uuidv7";
 import { sliceHistory } from "../../history";
 import { ChatMessage, Conversation } from "../../types";
 import { WebSocket } from "ws";
@@ -24,7 +24,7 @@ describe("sliceChatHistory", () => {
 
   const createConversation = (count: number): Conversation => {
     return {
-      id: uuidv7(), 
+      id: uuidv7(),
       ws: {
         send: jest.fn(),
         isPaused: jest.fn(),

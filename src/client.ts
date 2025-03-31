@@ -75,7 +75,9 @@ function askMessage(input: string) {
         messagePrompt();
     }
   } else {
-    ws.send(JSON.stringify({ type: MessageType.MESSAGE, content: input, clientId }));
+    ws.send(
+      JSON.stringify({ type: MessageType.MESSAGE, content: input, clientId }),
+    );
   }
 }
 
@@ -161,7 +163,9 @@ function showCommands() {
   console.log("\nCommands:");
   console.log(`/${MessageType.LIST_OPERATORS} - List available operators`);
   console.log(`/${MessageType.CONNECT} <userId> - Connect to an operator`);
-  console.log(`/${MessageType.DISCONNECT} - Disconnect from the current operator`);
+  console.log(
+    `/${MessageType.DISCONNECT} - Disconnect from the current operator`,
+  );
   console.log(`/${MessageType.REQUEST_CLIENT_ID} - Request a client ID`);
   console.log(`/${Command.HELP} - Show the help menu`);
   logCommonCommands();
