@@ -4,9 +4,11 @@ export abstract class BaseChatCallback {
   constructor(
     protected readonly _id: string,
     protected readonly _isOperator: boolean = false,
+    protected readonly _beforeMessage: boolean = false,
   ) {
     this._id = _id;
     this._isOperator = _isOperator;
+    this._beforeMessage = _beforeMessage;
   }
 
   get id(): string {
@@ -17,18 +19,21 @@ export abstract class BaseChatCallback {
     return this._isOperator;
   }
 
+  get beforeMessage(): boolean {
+    return this._beforeMessage;
+  }
+
   abstract get callback(): (obj: any) => Promise<any>;
 }
 
 export class ChatCallback extends BaseChatCallback {
   constructor(
     protected readonly _id: string,
-    private readonly _callback: (
-      chatHistory: ChatMessage[],
-    ) => Promise<ChatMessage[]>,
+    private readonly _callback: (chatHistory: ChatMessage[]) => Promise<ChatMessage[]>,
+    protected readonly _beforeMessage: boolean = false,
     protected readonly _isOperator: boolean = false,
   ) {
-    super(_id, _isOperator);
+    super(_id, _isOperator, _beforeMessage);
     this._callback = _callback;
   }
 
@@ -41,9 +46,10 @@ export class ConversationCallback extends BaseChatCallback {
   constructor(
     protected readonly _id: string,
     private readonly _callback: (conversation: Conversation) => Promise<any>,
+    protected readonly _beforeMessage: boolean = false,
     protected readonly _isOperator: boolean = false,
   ) {
-    super(_id, _isOperator);
+    super(_id, _isOperator, _beforeMessage);
     this._callback = _callback;
   }
 

@@ -8,6 +8,6 @@ import { clientIdLog } from "../callbacks/clientIdLog";
  * It will log the chat history to the console.
  */
 initChatServer([
-  new ChatCallback("simpleChat", simpleLogger),
-  new ConversationCallback("clientIdLog", clientIdLog),
+  new ChatCallback("simpleChat", simpleLogger, false),
+  new ConversationCallback("clientIdLog", clientIdLog, false),
 ]);

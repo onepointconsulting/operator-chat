@@ -96,6 +96,8 @@ export async function handleChatMessage(
 
   sliceHistory(conversation);
 
+  await handleCallbacks(conversation, true);
+
   if (conversation.connectedTo) {
     const target = conversations.get(conversation.connectedTo);
     if (target) {
@@ -133,7 +135,7 @@ export async function handleChatMessage(
     }
   }
   // Execute all applicable callbacks
-  await handleCallbacks(conversation);
+  await handleCallbacks(conversation, false);
 }
 
 /**
@@ -247,10 +249,13 @@ export function askPredefinedQuestion(
  * @param conversation - The conversation to execute callbacks for
  * @returns The updated chat history after all callbacks have been executed
  */
-export async function handleCallbacks(conversation: Conversation) {
+export async function handleCallbacks(conversation: Conversation, beforeMessage : boolean) {
   // Filter callbacks that should be executed
   const activeCallbacks = globalCallbacks.filter((callback) => {
     if (!callback.isOperator && conversation.connectedTo) {
+      return false;
+    }
+    if(beforeMessage !== callback.beforeMessage) {
       return false;
     }
     return true;
