@@ -29,7 +29,9 @@ export abstract class BaseChatCallback {
 export class ChatCallback extends BaseChatCallback {
   constructor(
     protected readonly _id: string,
-    private readonly _callback: (chatHistory: ChatMessage[]) => Promise<ChatMessage[]>,
+    private readonly _callback: (
+      chatHistory: ChatMessage[],
+    ) => Promise<ChatMessage[]>,
     protected readonly _beforeMessage: boolean = false,
     protected readonly _isOperator: boolean = false,
   ) {
