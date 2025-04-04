@@ -18,6 +18,7 @@ export enum MessageType {
   CONVERSATION_ID = "conversation-id",
   REQUEST_CLIENT_ID = "request-client-id",
   CLIENT_ID = "client-id",
+  IMPORT_HISTORY = "import-history",
 }
 
 export enum Command {

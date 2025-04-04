@@ -15,6 +15,7 @@ import {
   askPredefinedQuestion,
   handleConversationId,
   handleClientId as handleRequestClientId,
+  handleImportHistory,
 } from "./commandHandler";
 import http from "http";
 
@@ -112,6 +113,10 @@ wss.on("connection", (ws: WebSocket) => {
 
       case MessageType.REQUEST_CLIENT_ID:
         handleRequestClientId(ws, conversation.id);
+        break;
+
+      case MessageType.IMPORT_HISTORY:
+        handleImportHistory(conversation, data.history);
         break;
 
       default:

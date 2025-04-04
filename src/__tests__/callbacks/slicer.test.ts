@@ -2,10 +2,11 @@ import { uuidv7 } from "uuidv7";
 import { sliceHistory } from "../../history";
 import { ChatMessage, Conversation } from "../../types";
 import { WebSocket } from "ws";
+import { Role } from "../../enums";
 
 describe("sliceChatHistory", () => {
   const systemMessage: ChatMessage = {
-    role: "system",
+    role: Role.SYSTEM,
     content: "system message",
   };
   const createMessages = (count: number): ChatMessage[] => {
@@ -15,7 +16,7 @@ describe("sliceChatHistory", () => {
         { length: count - 1 },
         (_, i) =>
           ({
-            role: "user",
+            role: Role.USER,
             content: `message ${i + 1}`,
           }) as ChatMessage,
       ),

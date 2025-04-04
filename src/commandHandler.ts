@@ -197,6 +197,8 @@ export function handleDisconnect(
       }
     }
   }
+  // Free memory
+  conversations.delete(conversation.id);
 }
 
 /**
@@ -292,4 +294,8 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
       conversationId,
     }),
   );
+}
+
+export function handleImportHistory(conversation: Conversation, history: ChatMessage[]) {
+  conversation.chatHistory = [...history];
 }

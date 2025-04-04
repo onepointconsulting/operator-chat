@@ -1,8 +1,9 @@
 import { LLMService } from "../../llm-service";
 import { ChatMessage } from "../../types";
+import { Role } from "../../enums";
 
 export const mockChatMessage: ChatMessage = {
-  role: "user",
+  role: Role.USER,
   content: "Hello, how are you?",
 };
 

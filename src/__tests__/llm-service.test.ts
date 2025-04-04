@@ -1,5 +1,5 @@
 import { LLMService } from "../llm-service";
-import { SupportedLLMProvider } from "../enums";
+import { SupportedLLMProvider, Role } from "../enums";
 import { ChatMessage } from "../types";
 
 describe("LLMService", () => {
@@ -24,7 +24,7 @@ describe("LLMService", () => {
     llmService.setProvider(provider);
     const messages: ChatMessage[] = [
       {
-        role: "user",
+        role: Role.USER,
         content: "Hello, how are you?",
       },
     ];

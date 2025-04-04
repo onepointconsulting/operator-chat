@@ -4,6 +4,7 @@ import { SupportedLLMProvider, Role } from "./enums";
 export interface ChatMessage {
   role: Role;
   content: string;
+  timestamp?: Date
 }
 
 export interface Conversation {
