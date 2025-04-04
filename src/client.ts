@@ -132,7 +132,7 @@ ws.on("message", (data) => {
       break;
 
     case MessageType.SET_NAME:
-      console.log(`${message.clientId} is now known as ${message.name}`);
+      console.log(`${message.conversationId} is now known as ${message.name}`);
       messagePrompt();
       break;
 

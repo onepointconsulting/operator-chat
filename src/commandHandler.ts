@@ -7,6 +7,13 @@ import { globalCallbacks } from "./main";
 import { sliceHistory } from "./history";
 import { ConversationCallback } from "./callback";
 import { uuidv7 } from "uuidv7";
+import { readPrompts } from "./prompts";
+
+const BASIC_SYSTEM_MESSAGE = (readPrompts().basic as any).system_message;
+
+export function createInitialMessage() {
+  return { role: Role.SYSTEM, content: BASIC_SYSTEM_MESSAGE }
+}
 
 /**
  * Handles the connection between an operator and a user.
@@ -297,5 +304,5 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
 }
 
 export function handleImportHistory(conversation: Conversation, history: ChatMessage[]) {
-  conversation.chatHistory = [...history];
+  conversation.chatHistory = [createInitialMessage(), ...history];
 }

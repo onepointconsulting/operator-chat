@@ -16,6 +16,7 @@ import {
   handleConversationId,
   handleClientId as handleRequestClientId,
   handleImportHistory,
+  createInitialMessage,
 } from "./commandHandler";
 import http from "http";
 
@@ -43,8 +44,6 @@ export const wss = new WebSocketServer({ noServer: true });
 const conversations = new Map<string, Conversation>();
 const llmService = new LLMService();
 
-const BASIC_SYSTEM_MESSAGE = (readPrompts().basic as any).system_message;
-
 // Handle upgrade requests
 server.on("upgrade", (request, socket, head) => {
   // Check origin for CORS
@@ -68,7 +67,7 @@ wss.on("connection", (ws: WebSocket) => {
   const conversation: Conversation = {
     id: conversationId,
     ws,
-    chatHistory: [{ role: Role.SYSTEM, content: BASIC_SYSTEM_MESSAGE }],
+    chatHistory: [createInitialMessage()],
     isOperator: false,
     predefinedQuestions: getInitialQuestions(),
   };
