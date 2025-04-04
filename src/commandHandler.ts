@@ -307,7 +307,11 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
   );
 }
 
-export async function handleImportHistory(conversation: Conversation, history: ChatMessage[]) {
-  conversation.chatHistory = [createInitialMessage(), ...history];
-  await handleCallbacks(conversation, false);
+export async function handleImportHistory(conversation: Conversation, history: ChatMessage[] | undefined) {
+  if(history) {
+    conversation.chatHistory = [createInitialMessage(), ...history];
+    await handleCallbacks(conversation, false);
+  } else {
+    console.error("No history to import!");
+  }
 }
