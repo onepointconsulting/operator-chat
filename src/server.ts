@@ -115,7 +115,7 @@ wss.on("connection", (ws: WebSocket) => {
         break;
 
       case MessageType.IMPORT_HISTORY:
-        handleImportHistory(conversation, data.history);
+        await handleImportHistory(conversation, data.history);
         break;
 
       default:

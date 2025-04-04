@@ -277,7 +277,11 @@ export async function handleCallbacks(
   for (const callback of activeCallbacks) {
     const promise = callback.callback;
     if (callback instanceof ConversationCallback) {
-      await promise(conversation);
+      try {
+        await promise(conversation);
+      } catch (error) {
+        console.error(error);
+      }
     } else {
       conversation.chatHistory = await promise(conversation.chatHistory);
     }
@@ -303,6 +307,7 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
   );
 }
 
-export function handleImportHistory(conversation: Conversation, history: ChatMessage[]) {
+export async function handleImportHistory(conversation: Conversation, history: ChatMessage[]) {
   conversation.chatHistory = [createInitialMessage(), ...history];
+  await handleCallbacks(conversation, false);
 }
