@@ -102,6 +102,8 @@ ws.on("message", (data) => {
       process.stdout.write("\n\n");
       if (message.subType === MessageSubtype.STREAM_END_ERROR) {
         console.error("Error:", message.message);
+      } else {
+        console.log(`Message ID: ${message.message.id}\n`);
       }
       messagePrompt();
       break;
