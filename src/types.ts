@@ -2,6 +2,7 @@ import { WebSocket } from "ws";
 import { SupportedLLMProvider, Role } from "./enums";
 
 export interface ChatMessage {
+  id: string;
   role: Role;
   content: string;
   timestamp?: Date

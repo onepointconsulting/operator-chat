@@ -12,7 +12,7 @@ import { readPrompts } from "./prompts";
 const BASIC_SYSTEM_MESSAGE = (readPrompts().basic as any).system_message;
 
 export function createInitialMessage() {
-  return { role: Role.SYSTEM, content: BASIC_SYSTEM_MESSAGE }
+  return { id: uuidv7(), role: Role.SYSTEM, content: BASIC_SYSTEM_MESSAGE }
 }
 
 /**
@@ -94,6 +94,7 @@ export async function handleChatMessage(
   llmService: LLMService,
 ) {
   const chatMessage: ChatMessage = {
+    id: uuidv7(),
     role: conversation.isOperator ? Role.OPERATOR : Role.USER,
     content: data.content,
   };
@@ -238,6 +239,7 @@ export function askPredefinedQuestion(
   const question = questions[0];
   conversations.predefinedQuestions = questions.slice(1);
   conversations.chatHistory.push({
+    id: uuidv7(),
     role: Role.ASSISTANT,
     content: question,
   });
@@ -309,7 +311,7 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
 
 export async function handleImportHistory(conversation: Conversation, history: ChatMessage[] | undefined) {
   if(history) {
-    conversation.chatHistory = [createInitialMessage(), ...history];
+    conversation.chatHistory = [createInitialMessage(), ...history.map(h => ({...h, id: uuidv7()}))];
     await handleCallbacks(conversation, false);
   } else {
     console.error("No history to import!");

@@ -9,6 +9,7 @@ import {
 } from "./enums";
 import { Conversation } from "./types";
 import { Config } from "./config";
+import { uuidv7 } from "uuidv7";
 
 function convertMessage(role: string, provider: LLMProvider) {
   if (provider === SupportedLLMProvider.GEMINI && role === "system") {
@@ -122,6 +123,7 @@ export class LLMService {
       }
 
       const aiMessage: ChatMessage = {
+        id: uuidv7(),
         role: Role.ASSISTANT,
         content: fullResponse,
       };
