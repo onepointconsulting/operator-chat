@@ -110,6 +110,14 @@ Operator Commands:
 yarn client
 ```
 
+## Publishing
+
+Use:
+
+```
+npm publish
+```
+
 
 
 
