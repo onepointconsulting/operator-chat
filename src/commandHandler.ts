@@ -311,7 +311,12 @@ export function handleClientId(ws: WebSocket, conversationId: string) {
 
 export async function handleImportHistory(conversation: Conversation, history: ChatMessage[] | undefined) {
   if(history) {
-    conversation.chatHistory = [createInitialMessage(), ...history.map(h => ({...h, id: uuidv7()}))];
+    conversation.chatHistory = [createInitialMessage(), ...history.map(h => {
+      if(!h.id) {
+        return {...h, id: uuidv7()}
+      }
+      return {...h};
+    })];
     await handleCallbacks(conversation, false);
   } else {
     console.error("No history to import!");
